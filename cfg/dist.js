@@ -12,18 +12,18 @@ let BowerWebpackPlugin = require('bower-webpack-plugin');
 let config = Object.assign({}, baseConfig, {
   entry: path.join(__dirname, '../src/index'),
   cache: false,
-  devtool: 'sourcemap',
+  devtool: false,
   plugins: [
-    new webpack.optimize.DedupePlugin(),
+    new webpack.optimize.DedupePlugin(),  //检测冗余
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     }),
     new BowerWebpackPlugin({
       searchResolveModulesDirectories: false
     }),
-    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.optimize.UglifyJsPlugin(),//压缩代码
     new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.optimize.AggressiveMergingPlugin(),
+    new webpack.optimize.AggressiveMergingPlugin(),//优化代码
     new webpack.NoErrorsPlugin()
   ],
   module: defaultSettings.getDefaultModules()
