@@ -19,20 +19,47 @@ imgData=(function getImgDataUrl(array) {
 */
 
 var randomNumber = function(min,man){
-  return Math.floor(Math.random()*(man - min)) +　min;
+  return Math.floor(Math.random() * (man - min)) +　min;
 };
+
+var randomDeg = function  () {
+  return (Math.random()<0.5?'-':'') + Math.floor(Math.random() * 45);
+}
 
 //图片组件
 class ImageModule extends React.Component{
-  render(){
-    var img=this.props.data,
-    styleObj={};
-
-    if(this.props.imgFiguresState.pos){
-      styleObj=this.props.imgFiguresState.pos;
+  constructor(props){
+    super(props);
+    this.handClick = this.handClick.bind(this)
+  }
+  handClick(e){
+    if(!this.props.imgFiguresState.isCenter){
+      this.props.centerImgs();
+    }else{
+      this.props.reverseImgs();
     }
+      e.preventDefault();
+  		e.stopPropagation();
+  }
+  render(){
+    var img = this.props.data,
+    styleObj = {},
+    imgState = this.props.imgFiguresState,
+    imgClassName = '';
+    if(imgState.pos){
+      styleObj=imgState.pos;
+    }
+    if(imgState.rotate){
+      ['Moz','Ms','WebKit',''].forEach(function  (value,index) {
+        styleObj[value + 'transform'] = 'rotate(' + imgState.rotate + 'deg)';
+      })
+    }
+    imgState.isCenter?styleObj['zIndex'] = 111:'';
+
+    imgClassName += imgState.isReverse?'is-reverse':'';
+
     return (
-      <figure style={styleObj}>
+      <figure className={imgClassName} style = {styleObj} onClick = {this.handClick}>
       <img src={img.imgUrl} alt={img.title}/>
       <figcaption>
       <span className="img-title">{img.title}</span>
@@ -78,7 +105,6 @@ class gallery extends React.Component {
     };
   }
 
-
   renderImgs(centerIndex){
     var stateImgs = this.state.stateImgs,
     stateRange = this.stateRange,
@@ -88,7 +114,12 @@ class gallery extends React.Component {
 
     // 让centerIndex的图片居中
     var centerImgs=stateImgs.splice(centerIndex,1);
-    centerImgs[0].pos = centerPos;
+    centerImgs[0]= {
+      pos : centerPos,
+      rotate:0,
+      isCenter:true,
+      isReverse:false
+    }
 
     // 顶部图片取一个或者不取
     var topImgNum=Math.floor(Math.random() * 2),
@@ -96,9 +127,14 @@ class gallery extends React.Component {
     topImgs=null;
     if(topImgNum){
       topImgs=stateImgs.splice(topImgIndex,topImgNum);
-      topImgs[0].pos = {
-        left:randomNumber(topSidesPos.left[0],topSidesPos.left[1]),
-        top:randomNumber(topSidesPos.top[0],topSidesPos.top[1])
+      topImgs[0]={
+        pos:{
+          left:randomNumber(topSidesPos.left[0],topSidesPos.left[1]),
+          top:randomNumber(topSidesPos.top[0],topSidesPos.top[1])
+        },
+        rotate:randomDeg(),
+        isCenter:false,
+        isReverse:false
       }
     }
 
@@ -111,10 +147,15 @@ class gallery extends React.Component {
       }else{
         bothLeft = bothSidesPos.rightRange;
       }
-      stateImgs[i].pos = {
-        left:randomNumber(bothLeft[0],bothLeft[1]),
-        top:randomNumber(bothSidesPos.visRange[0],bothSidesPos.visRange[1])
-      }
+      stateImgs[i] = {
+        pos:{
+          left:randomNumber(bothLeft[0],bothLeft[1]),
+          top:randomNumber(bothSidesPos.visRange[0],bothSidesPos.visRange[1])
+        },
+        rotate:randomDeg(),
+        isCenter:false,
+        isReverse:false
+      };
     }
 
     //  合并状态数组
@@ -128,6 +169,22 @@ class gallery extends React.Component {
     })
   }
 
+  centerImgs(index) {
+		return () => {
+			this.renderImgs(index);
+		}
+	}
+
+  reverseImgs(index){
+    return () => {
+      var stateImgs = this.state.stateImgs;
+      stateImgs[index].isReverse = !stateImgs[index].isReverse;
+
+      this.setState({
+        stateImgs : stateImgs
+      })
+    }
+  }
   componentDidMount(){
     //  获取舞台的大小和一半
     var stage = ReactDOM.findDOMNode(this.refs.stage),
@@ -141,26 +198,26 @@ class gallery extends React.Component {
     imgsW = imgs.scrollWidth,
     halfImgsH = Math.floor(imgsH / 2),
     halfImgsW = Math.floor(imgsW / 2);
+
     // 给stateRange赋值
     this.stateRange.centerPos　= {
-      left:halfStageW - imgsW,
-      top: halfStageH - imgsH
+      left:halfStageW - halfImgsW,
+      top: halfStageH - halfImgsH
     }
 
     this.stateRange.bothSidesPos = {
       leftRange:[-halfImgsW,halfStageW - halfImgsW * 3],
-      rightRange:[halfStageW + halfImgsH * 3,stageW + halfImgsW],
-      visRange: [-halfImgsH,stageH + halfImgsH]
+      rightRange:[halfStageW + halfImgsH,stageW - halfImgsW],
+      visRange: [-halfImgsH,stageH - halfImgsH]
     }
 
     this.stateRange.topSidesPos = {
       left:[halfStageW - halfImgsW *　3,halfStageW + halfImgsW * 3],
-      top:[-halfImgsH,halfImgsH * 3]
+      top:[-halfImgsH,halfStageH - halfImgsH * 3]
     }
 
     var num=Math.floor(Math.random()*imgData.length);
     this.renderImgs(num);
-     console.log(this.stateRange)
   }
 
   render() {
@@ -174,11 +231,13 @@ class gallery extends React.Component {
           pos:{
             left:0,
             top:0
-          }
+          },
+          rotate:0,
+          isCenter:false,
+          isReverse:false
         });
       }
-      console.log(this.state.stateImgs[index])
-      imgFigures.push(<ImageModule data={value} imgFiguresState={this.state.stateImgs[index]} ref={'imgs'+index}/>)
+      imgFigures.push(<ImageModule data={value} imgFiguresState={this.state.stateImgs[index]} reverseImgs={this.reverseImgs(index)} centerImgs={this.centerImgs(index)} ref={'imgs'+index}/>)
     }.bind(this))
 
     return (
