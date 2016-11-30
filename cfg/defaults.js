@@ -10,6 +10,9 @@ const path = require('path');
 const srcPath = path.join(__dirname, '/../src');
 const dfltPort = 8000;
 
+// Add needed plugins here
+let ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 /**
  * Get the default modules object for webpack
  * @return {Object}
@@ -26,7 +29,7 @@ function getDefaultModules() {
     loaders: [
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader!autoprefixer-loader?{browsers:["last 2 version", "firefox 15"]}'
+        loader: ExtractTextPlugin.extract('style-loader','css-loader!autoprefixer-loader?{browsers: ["last 2 versions", "safari 5", "ie 9", "ios 6", "android 4","firefox 15"]}')
       },
       {
         test: /\.sass/,
@@ -34,7 +37,7 @@ function getDefaultModules() {
       },
       {
         test: /\.scss/,
-        loader: 'style-loader!css-loader!autoprefixer-loader?{browsers:["last 2 version", "firefox 15"]}!sass-loader?outputStyle=expanded'
+        loader: ExtractTextPlugin.extract('style-loader','css-loader!autoprefixer-loader?{browsers: ["last 2 versions", "safari 5", "ie 9", "ios 6", "android 4","firefox 15"]}!sass-loader?outputStyle=expanded')
       },
       {
         test: /\.less/,
@@ -62,7 +65,7 @@ function getDefaultModules() {
 
 module.exports = {
   srcPath: srcPath,
-  publicPath: '/assets/',
+  publicPath: 'assets/',
   port: dfltPort,
   getDefaultModules: getDefaultModules
 };

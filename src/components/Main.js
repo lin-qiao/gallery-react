@@ -32,14 +32,15 @@ class ImageModule extends React.Component{
     super(props);
     this.handClick = this.handClick.bind(this)
   }
+// 鼠标点击两种状态
   handClick(e){
     if(!this.props.imgFiguresState.isCenter){
       this.props.centerImgs();
     }else{
       this.props.reverseImgs();
     }
-      e.preventDefault();
-  		e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
   }
   render(){
     var img = this.props.data,
@@ -56,7 +57,8 @@ class ImageModule extends React.Component{
     }
     imgState.isCenter?styleObj['zIndex'] = 111:'';
 
-    imgClassName += imgState.isReverse?'is-reverse':'';
+    imgClassName += imgState.isCenter?' is-center':'';
+    imgClassName += imgState.isReverse?' is-reverse':'';
 
     return (
       <figure className={imgClassName} style = {styleObj} onClick = {this.handClick}>
@@ -71,9 +73,27 @@ class ImageModule extends React.Component{
 }
 // 控制组件
 class ControlModule extends React.Component {
+  constructor(props){
+    super(props);
+    this.handClick = this.handClick.bind(this)
+  }
+
+  handClick(e){
+    if(!this.props.imgFiguresState.isCenter){
+      this.props.centerImgs();
+    }else{
+      this.props.reverseImgs();
+    }
+    e.stopPropagation();
+    e.preventDefault();
+  }
   render() {
+    var imgState = this.props.imgFiguresState,
+      spanClassName='';
+      spanClassName += imgState.isCenter?' is-center':'';
+      spanClassName += imgState.isReverse?' is-reverse':'';
     return (
-      <span>word</span>
+      <span className = {spanClassName} onClick = {this.handClick}></span>
     )
   }
 }
@@ -158,22 +178,21 @@ class gallery extends React.Component {
       };
     }
 
-    //  合并状态数组
-    stateImgs.splice(centerIndex,0,centerImgs[0]);
+    //  合并状态数组 先splice topimgs,在splice centerImgs 不能颠倒顺序， 因为会改变Index的值
     if(topImgNum){
       stateImgs.splice(topImgIndex,0,topImgs[0]);
     }
-
+    stateImgs.splice(centerIndex,0,centerImgs[0]);
     this.setState({
-       stateImgs : stateImgs
+      stateImgs : stateImgs
     })
   }
-
+  // es6 return 一个函数 （）=>｛｝写法  （）｛｝会报错
   centerImgs(index) {
-		return () => {
-			this.renderImgs(index);
-		}
-	}
+    return () => {
+      this.renderImgs(index);
+    }
+  }
 
   reverseImgs(index){
     return () => {
@@ -185,6 +204,7 @@ class gallery extends React.Component {
       })
     }
   }
+
   componentDidMount(){
     //  获取舞台的大小和一半
     var stage = ReactDOM.findDOMNode(this.refs.stage),
@@ -238,6 +258,7 @@ class gallery extends React.Component {
         });
       }
       imgFigures.push(<ImageModule data={value} imgFiguresState={this.state.stateImgs[index]} reverseImgs={this.reverseImgs(index)} centerImgs={this.centerImgs(index)} ref={'imgs'+index}/>)
+      navLists.push(<ControlModule imgFiguresState={this.state.stateImgs[index]} reverseImgs={this.reverseImgs(index)} centerImgs={this.centerImgs(index)}/>)
     }.bind(this))
 
     return (

@@ -1,15 +1,15 @@
 /* Base Application Styles */
-// @font-face {
-//     font-family: "icons-turn-arrow";
-//     src: url("../fonts/icons/turn-arrow.eot") format("embedded-opentype"), url("../fonts/icons/turn-arrow.woff") format("woff"), url("../fonts/icons/turn-arrow.ttf") format("truetype"), url("../fonts/icons/turn-arrow.svg") format("svg");
-// }
+@font-face {
+    font-family: "icon-fonts";
+    src: url("../fonts/icons/turn-arrow.eot") format("embedded-opentype"), url("../fonts/icons/turn-arrow.woff") format("woff"), url("../fonts/icons/turn-arrow.ttf") format("truetype"), url("../fonts/icons/turn-arrow.svg") format("svg");
+}
 body,ul,li,p,span,h1,h2,h3,h4,h5,h6,strong,div,figure,section,figcaption{
   padding: 0;
   margin: 0;
   list-style: none;
 }
 body {
-  background: #999;
+  background: #ddd;
   color:#666;
   font-family:sans-serif,"微软雅黑";
 }
@@ -72,5 +72,36 @@ body {
 /* img-end */
 
 /*nav-start*/
-
+  .controller-nav{
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 30px;
+    text-align: center;
+    span{
+      width: 30px;
+      height: 30px;
+      display: inline-block;
+      background-color: #aaa;
+      border-radius: 50%;
+      margin: 0 5px;
+      transform: scale(.5);
+      transition: transform .6s ease-in-out,background .6s ease-in-out;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    span.is-center{
+      background-color: #888;
+      transform: scale(1);
+      &::after{
+        color: #fff;
+        content: '\e600';
+        font-family: 'icon-fonts';
+        line-height: 30px;
+      }
+    }
+    span.is-center.is-reverse{
+      transform: rotateY(180deg);
+    }
+  }
 /*nav-end*/
